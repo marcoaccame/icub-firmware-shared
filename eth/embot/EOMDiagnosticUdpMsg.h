@@ -65,14 +65,17 @@ public:
     bool getRop(EOMDiagnosticRopMsg &msg, uint8_t pos);
     bool addRop(const EOMDiagnosticRopMsg &msg);
     bool addRop(const EOMDiagnosticRopMsg::Info &info);
-    EOMDiagnosticRopMsg& getRopForModify(bool res);
+    EOMDiagnosticRopMsg& getRopForModify(bool& res);
     bool createUdpPacketData(std::array<uint8_t, udpPacketDataSize_> &udpMsg); //fill udpPacketData_
     bool parse(const std::array<uint8_t, udpPacketDataSize_> &rxData);         //fill header,footer,body
     bool parse(uint8_t *data, uint16_t size);                                  //fill header,footer,body
 
     void reset();
-    void dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,const std::map<DiagnosticRopCode,std::string>* ropCode,const std::map<DiagnosticRopString,std::string>* ropString) const;
-    uint8_t getCurrentRopNumber() { return currentRopNumber_; }
+    void dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,
+              const std::map<DiagnosticRopCode,std::string>* ropCode,
+              const std::map<DiagnosticRopString,std::string>* ropString,
+              std::ostream& stream) const;
+    uint8_t getCurrentRopNumber() { return header_.data_.numberOfRops_; }
 
 private:
     std::array<uint8_t, udpPacketDataSize_> udpPacketData_;
@@ -119,7 +122,7 @@ inline bool EOMDiagnosticUdpMsg::addRop(const EOMDiagnosticRopMsg &msg)
     return true;
 };
 
-inline EOMDiagnosticRopMsg& EOMDiagnosticUdpMsg::getRopForModify(bool res)
+inline EOMDiagnosticRopMsg& EOMDiagnosticUdpMsg::getRopForModify(bool& res)
 {
     if (currentRopNumber_ > getRopNumber())
     {
@@ -233,14 +236,17 @@ inline bool EOMDiagnosticUdpMsg::createUdpBody()
     return true;  
 }
 
-inline void EOMDiagnosticUdpMsg::dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,const std::map<DiagnosticRopCode,std::string>* ropCode,const std::map<DiagnosticRopString,std::string>* ropString) const
+inline void EOMDiagnosticUdpMsg::dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,
+                                      const std::map<DiagnosticRopCode,std::string>* ropCode,
+                                      const std::map<DiagnosticRopString,std::string>* ropString,
+                                      std::ostream& stream) const
 {
-    header_.dump();
+    header_.dump(stream);
     for (auto currentRop : body_)
     {
-        currentRop.dump(ropSeverity,ropCode,ropString);
+        currentRop.dump(ropSeverity,ropCode,ropString,stream);
     };
-    footer_.dump();
+    footer_.dump(stream);
 }
 
 #endif // include-guard

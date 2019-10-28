@@ -47,7 +47,7 @@ public:
     };
     EO_VERIFYsizeof(Info, 24)
 
-        constexpr static uint16_t getSize()
+    constexpr static uint16_t getSize()
     {
         return sizeof(Info);
     }
@@ -59,10 +59,14 @@ public:
 
     uint8_t *data() const;
     void rawdump() const;
-    void dump(const std::map<DiagnosticRopSeverity,std::string>* ,const std::map<DiagnosticRopCode,std::string>* ,const std::map<DiagnosticRopString,std::string>* ) const;
+    void dump(const std::map<DiagnosticRopSeverity,std::string>* ,
+              const std::map<DiagnosticRopCode,std::string>* ,
+              const std::map<DiagnosticRopString,std::string>*, 
+              std::ostream& stream) const;
     void reset();
     DiagnosticRopCode getCode();
     DiagnosticRopSeverity getSeverity();
+    bool isEmptyRop() const;
 
     Info data_;
 };
@@ -113,7 +117,10 @@ inline void EOMDiagnosticRopMsg::rawdump() const
     std::cout << std::hex << ss.str() << std::endl;
 }
 
-inline void EOMDiagnosticRopMsg::dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,const std::map<DiagnosticRopCode,std::string>* ropCode,const std::map<DiagnosticRopString,std::string>* ropString) const
+inline void EOMDiagnosticRopMsg::dump(const std::map<DiagnosticRopSeverity,std::string>* ropSeverity,
+                                      const std::map<DiagnosticRopCode,std::string>* ropCode,
+                                      const std::map<DiagnosticRopString,std::string>* ropString,
+                                      std::ostream& stream) const
 {
     std::string codeStr{"unknown"};
     if(ropCode)
@@ -138,18 +145,30 @@ inline void EOMDiagnosticRopMsg::dump(const std::map<DiagnosticRopSeverity,std::
     if((DiagnosticRopCode)data_.param_[0]==DiagnosticRopCode::empty)
         return;
 
-    std::cout << "------ROP";
-    std::cout << "code:" <<std::left <<std::setw (15)<<codeStr << " ";
-    std::cout << "severity:" <<std::left<<std::setw (15)<<severityStr << " ";
-    std::cout << "param2:" <<std::left<<std::setw (15)<<stringStr << " ";
-    std::cout << "param3:" << data_.param_[3] << " ";
-    std::cout << "param4:" << data_.param_[4] << " ";
-    std::cout << "param5:" << data_.param_[5] << " ";
-    std::cout << "param6:" << data_.param_[6] << " ";
-    std::cout << "param7:" << data_.param_[7] << " ";
-    std::cout << "time:" << data_.time_ << " ";
-    std::cout << std::endl;    
+    stream << "------ROP";
+    stream << "code:" <<std::left <<std::setw (15)<<codeStr << " ";
+    stream << "severity:" <<std::left<<std::setw (15)<<severityStr << " ";
+    stream << "param2:" <<std::left<<std::setw (15)<<stringStr << " ";
+    stream << "param3:" << data_.param_[3] << " ";
+    stream << "param4:" << data_.param_[4] << " ";
+    stream << "param5:" << data_.param_[5] << " ";
+    stream << "param6:" << data_.param_[6] << " ";
+    stream << "param7:" << data_.param_[7] << " ";
+    stream << "time:" << data_.time_ << " ";
+    stream << std::endl;    
 };
+
+inline bool EOMDiagnosticRopMsg::isEmptyRop() const
+{
+    int tot=0;
+    for(uint16_t current:data_.param_)
+    {
+        tot+=current;
+    }
+    tot=+data_.time_;
+
+    return !(bool)tot;
+}
 
 #endif // include-guard
 

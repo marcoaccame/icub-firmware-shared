@@ -45,8 +45,7 @@ public:
     };
     EO_VERIFYsizeof(Info, 24)
 
-        EOMDiagnosticUdpHeader(const Info &data) : data_(data){};
-
+    EOMDiagnosticUdpHeader(const Info &data) : data_(data){};
     EOMDiagnosticUdpHeader(const std::array<uint8_t, sizeof(Info)> &data)
     {
         std::memcpy(&data_, data.data(), sizeof(Info));
@@ -73,14 +72,15 @@ public:
         data_.sequenceNum_ = sequenceNumber_;
     }
 
-    void dump() const
+    void dump(std::ostream& stream) const
     {
-        std::cout << "------HEADER--";
-        std::cout << "ageOfFrame:" << data_.sizeOfBody_ << " ";
-        std::cout << "numberOfRops:" << data_.numberOfRops_ << " ";
-        std::cout << "sequenceNum:" << data_.sequenceNum_ << " ";
-        std::cout << "ageOfFrame:" << data_.ageOfFrame_ << " ";
-        std::cout << std::endl;
+        stream << "--------------"<< std::endl;
+        stream << "------HEADER--";
+        stream << "ageOfFrame:" << data_.sizeOfBody_ << " ";
+        stream << "numberOfRops:" << data_.numberOfRops_ << " ";
+        stream << "sequenceNum:" << data_.sequenceNum_ << " ";
+        stream << "ageOfFrame:" << data_.ageOfFrame_ << " ";
+        stream << std::endl;
     };
 
     void reset()
@@ -88,8 +88,10 @@ public:
         data_ = (const struct Info){0};
     }
 
-private:
+
     Info data_;
+    
+private:
     inline static uint64_t sequenceNumber_{0};
 
     void increaseSequenceNumber()

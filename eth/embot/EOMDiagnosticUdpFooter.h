@@ -53,10 +53,10 @@ public:
         return sizeof(Info);
     }
 
-    void dump() const
+    void dump(std::ostream& stream) const
     {
-        std::cout << "------FOOTER--";
-        std::cout << "data:" << data_.data_ << std::endl;
+        stream << "------FOOTER--";
+        stream << "data:" << data_.data_ << std::endl;
     };
 
     void reset()
